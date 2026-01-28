@@ -36,4 +36,7 @@ def main():
     print("\n--- Reporte de Clasificación ---")
     print(classification_report(y_test, y_pred))
     
+if __name__ == "__main__":
+    main()
+    
     
