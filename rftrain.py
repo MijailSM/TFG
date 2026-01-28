@@ -8,7 +8,7 @@ import joblib
 
 def main():
     
-    if sys.argv != 2:
+    if len(sys.argv) != 2:
         print("Usage rftrain [csv]")
         return
     df = pd.read_csv(sys.argv[1])
