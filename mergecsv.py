@@ -27,6 +27,9 @@ def main():
     merged = pd.concat(csvs, ignore_index=True)
     
     merged = merged.sample(frac=1).reset_index(drop=True)
+    
+    print(f"porcentaje de cada clase:\n{merged['label1'].value_counts(normalize=True) * 100}")
+    
     mname = "Merged_csv.csv"
     merged.to_csv(mname, index=False)
     print(f"Archivos unidos en {mname}")
