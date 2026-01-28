@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import sys
 import pandas as pd
 import joblib
+import os
 
 def main():
     
@@ -27,9 +28,12 @@ def main():
     model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
     model.fit(X_train_scaled, y_train)
     
-    joblib.dump(model, 'rf_model_final.joblib')
-    joblib.dump(scaler, 'scaler_final.joblib')
-    joblib.dump(X.columns.tolist(), 'features_list.joblib')
+    folder = 'joblibs'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    joblib.dump(model, os.path.join(folder, 'rf_model_final.joblib'))
+    joblib.dump(scaler, os.path.join(folder, 'scaler_final.joblib'))
+    joblib.dump(X.columns.tolist(), os.path.join(folder, 'features_list.joblib'))
     print("Entrenamiento completado y modelos guardados.")
     
     y_pred = model.predict(X_test_scaled)
