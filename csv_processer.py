@@ -2,6 +2,7 @@ import sys
 import tarfile
 import pandas as pd
 import io
+import os
 
 def mergecsvs(csvs: list) -> pd.DataFrame:
     
@@ -49,7 +50,9 @@ def main():
     print("DataFrame unido, limpiando...")
     merged = attack_bening_cleanup(merged)
     
-    name = "Cleaned_DF.csv"
+    name = "csv/Cleaned_DF.csv"
+    if os.path.exists("csv/") == False:
+        os.mkdir("csv")
     print(f"Dataframe generado y limpio, guardando como {name}...")
     merged.to_csv(name, index=False)
     
