@@ -6,17 +6,20 @@ import sys
 import pandas as pd
 import joblib
 import os
-
+import time
 def main():
     
     if len(sys.argv) != 2:
         print("Usage rftrain [csv]")
         return
+    
+    print("Leyendo Dataset...")
     df = pd.read_csv(sys.argv[1])
     if df.size == 0:
         print("Error reading csv")
         return
     
+    print(f"Dataset {sys.argv[1]} cargado")
     X = df.drop(columns=['target'])
     y = df['target']
     
@@ -26,7 +29,11 @@ def main():
     X_test_scaled = scaler.fit_transform(X_test)
     
     model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
+    
+    start = time.time()
     model.fit(X_train_scaled, y_train)
+    end = time.time()
+    print(f"Tiempo de entrenamiento: {end - start} segundos")
     
     folder = 'joblibs'
     if not os.path.exists(folder):
