@@ -20,7 +20,7 @@ def protocol_extractor(df: pd.DataFrame) -> pd.DataFrame:
     df["protocols_list"] = df["network_protocols_all"].apply(
         lambda x: ast.literal_eval(x) if isinstance(x, str) and x.startswith('[') else []
     )
-    target_protocols = ['tcp', 'udp', 'icmp', 'arp', 'tls', 'http', 'dns']
+    target_protocols = ['tcp', 'udp', 'icmp', 'arp', 'tls', 'http', 'dns', 'mqtt', 'json']
     for protocol in target_protocols:
         df[f"proto_{protocol}"] = df["protocols_list"].apply(
             lambda x: 1 if protocol in x else 0
@@ -68,8 +68,11 @@ def main():
         print(f"Cargando archivo: {name} || Columnas: {len(df.columns)}")
             
         csvs.append(df)
-    
-    merged = mergecsvs(csvs)
+        
+    if len(csvs) > 1:
+        merged = mergecsvs(csvs)
+    else:
+        merged = csvs.pop()
     if args.cleanup == True:
         print("DataFrame unido, limpiando...")
         merged = protocol_extractor(merged)
@@ -78,7 +81,7 @@ def main():
     
     if args.name.endswith(".csv") == False:
         args.name = f"{args.name}.csv"
-    args.name = f"csv/{args.name}"
+    args.name = f"{args.name}"
     print(f"Dataframe nuevo, guardando como {args.name}...")
     merged.to_csv(args.name, index=False)
     

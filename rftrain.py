@@ -1,12 +1,14 @@
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 import sys
 import pandas as pd
 import joblib
 import os
 import time
+
+
 def main():
     
     if len(sys.argv) != 2:
@@ -28,22 +30,40 @@ def main():
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)
     
-    model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
+    param_grid = {
+        'n_estimators': [100, 200],
+        'max_depth': [10, 20, None],
+        'min_samples_split': [2, 5, 10],
+        'bootstrap': [True]
+    }
     
+    grid_search = GridSearchCV(
+        estimator=RandomForestClassifier(random_state=42),
+        param_grid=param_grid
+        cv=3,
+        n_jobs=-1,
+        verbose=2
+    )
+    
+    print("--- Buscando los mejores parámetros ---")
     start = time.time()
-    model.fit(X_train_scaled, y_train)
+    grid_search.fit(X_train_scaled, y_train)
     end = time.time()
+
+    # 4. Ver resultados
+    print(f"Mejores parámetros: {grid_search.best_params_}")
+    best_rf = grid_search.best_estimator_
     print(f"Tiempo de entrenamiento: {end - start} segundos")
     
     folder = 'joblibs'
     if not os.path.exists(folder):
         os.makedirs(folder)
-    joblib.dump(model, os.path.join(folder, 'rf_model_final.joblib'))
+    joblib.dump(best_rf, os.path.join(folder, 'rf_model_final.joblib'))
     joblib.dump(scaler, os.path.join(folder, 'scaler_final.joblib'))
     joblib.dump(X.columns.tolist(), os.path.join(folder, 'features_list.joblib'))
     print("Entrenamiento completado y modelos guardados.")
     
-    y_pred = model.predict(X_test_scaled)
+    y_pred = best_rf.predict(X_test_scaled)
     print("\n--- Reporte de Clasificación ---")
     print(classification_report(y_test, y_pred))
     
