@@ -65,7 +65,7 @@ def main():
     
     y_pred = best_rf.predict(X_test_scaled)
     print(f"Puntuación de entrenamiento: {accuracy_score(y_train, best_rf.predict(X_train_scaled))}")
-    print(f"Puntiación de test: {accuracy_score(y_pred)}")
+    print(f"Puntiación de test: {accuracy_score(y_test, y_pred)}")
     print("\n--- Reporte de Clasificación ---")
     print(classification_report(y_test, y_pred))
     
