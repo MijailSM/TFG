@@ -31,8 +31,8 @@ def main():
     X_test_scaled = scaler.fit_transform(X_test)
     
     param_grid = {
-        'n_estimators': [100, 200],
-        'max_depth': [10, 20, None],
+        'n_estimators': [100, 200, 300],
+        'max_depth': [10, 20, 30, None],
         'min_samples_split': [2, 5, 10],
         'bootstrap': [True]
     }
@@ -64,6 +64,8 @@ def main():
     print("Entrenamiento completado y modelos guardados.")
     
     y_pred = best_rf.predict(X_test_scaled)
+    print(f"Puntuación de entrenamiento: {accuracy_score(y_train, best_rf.predict(X_train_scaled))}")
+    print(f"Puntiación de test: {accuracy_score(y_pred)}")
     print("\n--- Reporte de Clasificación ---")
     print(classification_report(y_test, y_pred))
     
