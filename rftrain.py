@@ -38,7 +38,7 @@ def main():
     }
     
     grid_search = GridSearchCV(
-        estimator=RandomForestClassifier(random_state=42),
+        estimator=RandomForestClassifier(random_state=42, class_weight='balanced',),
         param_grid=param_grid,
         cv=3,
         n_jobs=-1,

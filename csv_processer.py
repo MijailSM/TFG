@@ -4,6 +4,14 @@ import io
 import os
 import argparse
 import ast
+from sklearn.preprocessing import LabelEncoder
+from enum import Enum
+
+class ClassIdentifier(Enum):
+    BINARIO = "1"
+    CLASS8 = "2"
+    CLASS61 = "3"
+    NONE = "0"
 
 def mergecsvs(csvs: list) -> pd.DataFrame:
     
@@ -30,8 +38,6 @@ def protocol_extractor(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def attack_bening_basic_cleanup(df: pd.DataFrame) -> pd.DataFrame:
-    df['target'] = df['label1'].map({'benign': 0, 'attack': 1})
-    df = df.drop(['device_name', 'device_mac', 'label_full','label2', 'label3', 'label4', 'timestamp'], axis=1)
     
     #Quitar columnas con datos iguales
     cols = [col for col in df.columns if df[col].nunique() <= 1]
@@ -40,12 +46,46 @@ def attack_bening_basic_cleanup(df: pd.DataFrame) -> pd.DataFrame:
     df = df.select_dtypes(include=['number'])
     return df
 
+def class_classifier(df: pd.DataFrame, numcl: ClassIdentifier) -> pd.DataFrame:
+    le = LabelEncoder()
+    value = numcl.value
+    if value == ClassIdentifier.BINARIO.value:
+        df['target'] = df['label1'].map({'benign': 0, 'attack': 1})
+    elif value == ClassIdentifier.CLASS8.value:
+        df['target'] = le.fit_transform(df['label2'])
+    else:
+        df['target'] = le.fit_transform(df['label3'])
+        
+    if value != ClassIdentifier.BINARIO.value:
+        mapping = dict(zip(le.classes_, range(len(le.classes_))))
+        print(f"Diccionario de etiquetas: {mapping}")
+        
+    df = df.drop(['device_name', 'device_mac', 'label_full', 'label1', 'label2', 'label3', 'label4', 'timestamp'], axis=1)
+    return df
+
+def class_menu():
+    print("\nSelecciona las clases a diferenciar:")
+    print("1. Clasificación Binaria (Ataque/Benigno)")
+    print("2. Clasificación Multiclase Básica (Tipo de ataque)")
+    print("3. Clasificación Multiclase Profunda (Tipo de ataque)")
+    while True:
+        opcion = input("Elige una opcion: ")
+        if opcion == "1":
+            return ClassIdentifier.BINARIO
+        if opcion == "2":
+            return ClassIdentifier.CLASS8
+        if opcion == "3":
+            return ClassIdentifier.CLASS61
+        else:
+            print("Opcion no valida")
+        
+
 def main():
-    
     parser = argparse.ArgumentParser()
     parser.add_argument("input", nargs="+", help="Archivos tar o csv de entrada")
     parser.add_argument("-c", "--cleanup", action="store_true", help="Realizar limpieza de la unión")
     parser.add_argument("-n", "--name", type=str, default="csv/Merged_DF.csv", help="Nombre del csv final")
+    parser.add_argument("-C", "--classes", type=str, choices=[e.value for e in ClassIdentifier], default=ClassIdentifier.NONE.value, help="Número de clases a diferenciar: 1: binario, 2: 8 clases, 3: 61 clases")
     args = parser.parse_args()
     
     csvs = []
@@ -76,6 +116,11 @@ def main():
     if args.cleanup == True:
         print("DataFrame unido, limpiando...")
         merged = protocol_extractor(merged)
+        
+        if args.classes == ClassIdentifier.NONE.value:
+            args.classes = class_menu()
+        
+        merged = class_classifier(merged,args.classes)
         merged = attack_bening_basic_cleanup(merged)
     os.makedirs("csv", exist_ok=True)
     
