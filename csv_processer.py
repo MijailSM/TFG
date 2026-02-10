@@ -6,6 +6,7 @@ import argparse
 import ast
 from sklearn.preprocessing import LabelEncoder
 from enum import Enum
+import joblib
 
 class ClassIdentifier(Enum):
     BINARIO = "1"
@@ -53,8 +54,10 @@ def class_classifier(df: pd.DataFrame, numcl: ClassIdentifier) -> pd.DataFrame:
         df['target'] = df['label1'].map({'benign': 0, 'attack': 1})
     elif value == ClassIdentifier.CLASS8.value:
         df['target'] = le.fit_transform(df['label2'])
+        joblib.dump(le, 'joblibs/le_class.joblib')
     else:
         df['target'] = le.fit_transform(df['label3'])
+        joblib.dump(le, 'joblibs/le_class.joblib')
         
     if value != ClassIdentifier.BINARIO.value:
         mapping = dict(zip(le.classes_, range(len(le.classes_))))
