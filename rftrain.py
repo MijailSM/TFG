@@ -7,16 +7,19 @@ import pandas as pd
 import joblib
 import os
 import time
+import argparse
+from imblearn.over_sampling import SMOTE
 
 
 def main():
     
-    if len(sys.argv) != 2:
-        print("Usage rftrain [csv]")
-        return
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input", help="Archivo csv para el entrenamiento y validacion")
+    parser.add_argument("-s", "--smote", action="store_true", help="Uso de SMOTE")
+    arguments = parser.parse_args()
     
     print("Leyendo Dataset...")
-    df = pd.read_csv(sys.argv[1])
+    df = pd.read_csv(arguments.input)
     if df.size == 0:
         print("Error reading csv")
         return
@@ -29,6 +32,11 @@ def main():
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)
+    if arguments.smote == True:
+        print("USANDO SMOTE")
+        smote = SMOTE()
+        X_train_smote, y_train_smote = smote.fit_resample(X_train_scaled, y_train)
+    
     
     param_grid = {
         'n_estimators': [100, 200, 300],
@@ -41,13 +49,16 @@ def main():
         estimator=RandomForestClassifier(random_state=42, class_weight='balanced',),
         param_grid=param_grid,
         cv=3,
-        n_jobs=-1,
+        n_jobs=4,
         verbose=2
     )
     
     print("--- Buscando los mejores parámetros ---")
     start = time.time()
-    grid_search.fit(X_train_scaled, y_train)
+    if arguments.smote == True:
+        grid_search.fit(X_train_smote, y_train_smote)
+    else:
+        grid_search.fit(X_train_scaled, y_train)
     end = time.time()
 
     # 4. Ver resultados
