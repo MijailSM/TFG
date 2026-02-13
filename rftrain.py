@@ -49,7 +49,7 @@ def main():
         estimator=RandomForestClassifier(random_state=42, class_weight='balanced',),
         param_grid=param_grid,
         cv=3,
-        n_jobs=4,
+        n_jobs=2,
         verbose=2
     )
     
