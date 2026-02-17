@@ -1,5 +1,8 @@
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 import sys
@@ -24,7 +27,7 @@ def main():
         print("Error reading csv")
         return
     
-    print(f"Dataset {sys.argv[1]} cargado")
+    print(f"Dataset {arguments.input} cargado")
     X = df.drop(columns=['target'])
     y = df['target']
     
