@@ -81,12 +81,16 @@ def class_menu():
             return ClassIdentifier.CLASS61
         else:
             print("Opcion no valida")
+            
+def feature_selection_params(df: pd.DataFrame) -> pd.DataFrame:
+    return df[['log_messages_count', 'log_data-types', 'network_fragmented-packets', 'network_ip-flags_max', 'network_tcp-flags-psh_count']]
         
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("input", nargs="+", help="Archivos tar o csv de entrada")
     parser.add_argument("-c", "--cleanup", action="store_true", help="Realizar limpieza de la unión")
+    parser.add_argument("-cF", "--cleanupFeature", action="store_true", help="Realizar limpieza del Dataframe siguiendo el Feature selection")
     parser.add_argument("-n", "--name", type=str, default="csv/Merged_DF.csv", help="Nombre del csv final")
     parser.add_argument("-C", "--classes", type=str, choices=[e.value for e in ClassIdentifier], default=ClassIdentifier.NONE.value, help="Número de clases a diferenciar: 1: binario, 2: 8 clases, 3: 61 clases")
     args = parser.parse_args()
@@ -125,6 +129,12 @@ def main():
         
         merged = class_classifier(merged,args.classes)
         merged = attack_bening_basic_cleanup(merged)
+    elif args.cleanupFeature == True:
+        if args.classes == ClassIdentifier.NONE.value:
+            args.classes = class_menu()
+            
+        merged = feature_selection_params(merged)
+        
     os.makedirs("csv", exist_ok=True)
     
     if args.name.endswith(".csv") == False:

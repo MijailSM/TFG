@@ -75,7 +75,8 @@ def main():
             n_iter=7,
             cv=3,
             n_jobs=2,
-            random_state=42
+            random_state=42,
+            verbose=1
         )
         search.fit(X_train_scaled, y_train)
         
