@@ -12,6 +12,7 @@ import numpy as np
 import pygad
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
+from imblearn.under_sampling import RandomUnderSampler
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -77,13 +78,38 @@ def tar_extract(filename: str):
         exit(1)
     return df
 
+def undersampling(df: pd.DataFrame, target) -> pd.DataFrame:
+    # counts = df["target"].value_counts()
+    # df = df[df[target].isin(counts[counts > 10].index)]
+    
+    rus = RandomUnderSampler(random_state=42)
+    df, target = rus.fit_resample(df, target)
+    return df, target
+
 def limpieza_basica(df: pd.DataFrame) -> pd.DataFrame:
     #TODO
     pass
 
-def feature_selection_CICcols(df: pd.DataFrame) -> pd.DataFrame:
-    #TODO
-    pass
+def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.DataFrame:
+    df = frequency_encoding(df, 'network_ports_all')
+    df, newcols = one_hot_encoding(df, 'log_data-types')
+    return df[[
+        #FALTA ALL IPs
+        'log_messages_count', 
+        'log_data-ranges_avg',
+        'network_fragmented-packets', 
+        'network_interval-packets',
+        'network_packets_all_count',
+        'network_ips_all_count',
+        'network_packet-size_std_deviation',
+        'network_protocols_all_count',
+        'network_time-delta_avg',
+        'network_ttl_avg',
+        'network_window-size_avg',
+        'network_ip-flags_max', 
+        'network_tcp-flags-psh_count',
+        'port_frequency_avg',
+    ] + (whitelist if whitelist else []) + (newcols)]
 
 def first_clean(df: pd.DataFrame, classes: int):
     
@@ -282,6 +308,8 @@ def feature_selection(df: pd.DataFrame, classes: int, threshold: int=15) -> pd.D
     final_features = [features_names[i] for i, bit in enumerate(solution) if bit == 1]
             
     return df[final_features], final_features
+    
+    
             
     
             
@@ -294,6 +322,9 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--basica", action="store_true", help="Realizar limpieza básica de los csvs", default=False)
     parser.add_argument("-Fd", "--feature_selection_columns", action="store_true", help="Solo conserva las columnas del feature selection del CIC", default=False)
     parser.add_argument("-Fs", "--feature_selection", action="store_true", help="Se realiza el algoritmo de Feature Selection", default=False)
+    parser.add_argument("-T", "--target_list", action="store_true", help="Mostrar todos los target", default=False)
+    parser.add_argument("-n", "--name", type=str, default="csv/Merged_DF.csv", help="Nombre del csv final")
+    
     #Añadir las columnas una vez terminado el feature selection
     args = parser.parse_args()
     
@@ -314,7 +345,33 @@ if __name__ == "__main__":
     if args.basica == True:
         dfmerged = limpieza_basica(dfmerged)
     elif args.feature_selection_columns == True:
-        dfmerged = feature_selection_CICcols(dfmerged)
+        whitelist = ['label_full', 'label1', 'label2', 'label3', 'label4']
+        dfmerged = feature_selection_CICcols(dfmerged, whitelist)
     elif args.feature_selection == True:
         dfmerged, final_features = feature_selection(dfmerged, 1)
         logging.info(f"Las columnas generadas son {final_features}")
+    
+    if args.feature_selection == False:
+        for i in tqdm.tqdm(range(3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
+            if i == 0:
+                target = 'label1'
+            if i == 1:
+                target = 'label2'
+            else:
+                target = 'label3'
+            
+            le = LabelEncoder()
+            y = le.fit_transform(df[target])
+            target_cols = ['label_full', 'label1', 'label2', 'label3', 'label4']
+            df_aux = df.drop(columns=target_cols)
+            df_aux, y = undersampling(df_aux, y)
+            df_aux['target'] = y
+            
+            if args.name.endswith('.csv') == False:
+                args.name = args.name + '.csv'
+            logging.info(f"Guardando csv como: {target}_{args.name}...")
+            df_aux.to_csv(f"{target}_{args.name}")
+        
+        
+        
+        
