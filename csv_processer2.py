@@ -91,9 +91,9 @@ def limpieza_basica(df: pd.DataFrame) -> pd.DataFrame:
     pass
 
 def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.DataFrame:
-    df = clean_csv_lists(df)
+    df, newfcols = clean_csv_lists(df)
     df = frequency_encoding(df, 'network_ports_all')
-    (df, newcols) = one_hot_encoding(df, 'log_data-types')
+    df, newohecols = one_hot_encoding(df, 'log_data-types')
     return df[[
         #FALTA ALL IPs
         'log_messages_count', 
@@ -110,7 +110,7 @@ def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.Data
         'network_ip-flags_max', 
         'network_tcp-flags-psh_count',
         'port_frequency_avg',
-    ] + (whitelist if whitelist else []) + (newcols)]
+    ] + (whitelist if whitelist else []) + (newohecols) + (newfcols)]
 
 def first_clean(df: pd.DataFrame, classes: int):
     
