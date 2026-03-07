@@ -94,7 +94,7 @@ def limpieza_basica(df: pd.DataFrame) -> pd.DataFrame:
 def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.DataFrame:
     df = clean_csv_lists(df)
     df, newfcols = frequency_encoding(df, 'network_ports_all')
-    df, newohecols = one_hot_encoding(df, 'log_data-types')
+    df, newohecols = frequency_encoding(df, 'log_data-types')
     return df[[
         #FALTA ALL IPs
         'log_messages_count', 
