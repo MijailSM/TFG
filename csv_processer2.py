@@ -91,6 +91,7 @@ def limpieza_basica(df: pd.DataFrame) -> pd.DataFrame:
     pass
 
 def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.DataFrame:
+    df = clean_csv_lists(df)
     df = frequency_encoding(df, 'network_ports_all')
     df, newcols = one_hot_encoding(df, 'log_data-types')
     return df[[
