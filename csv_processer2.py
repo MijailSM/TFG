@@ -353,7 +353,7 @@ if __name__ == "__main__":
         logging.info(f"Las columnas generadas son {final_features}")
     
     if args.feature_selection == False:
-        for i in tqdm.tqdm(range(3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
+        for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
             if i == 0:
                 target = 'label1'
             if i == 1:
