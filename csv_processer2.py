@@ -92,26 +92,28 @@ def limpieza_basica(df: pd.DataFrame) -> pd.DataFrame:
     pass
 
 def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.DataFrame:
-    logging.info("Extrayendo las columnas default del CIC...")
     df = clean_csv_lists(df)
+    
     df, newfcols = frequency_encoding(df, 'network_ports_all')
     df, newohecols = frequency_encoding(df, 'log_data-types')
-    return df[[
-        #FALTA ALL IPs
-        'log_messages_count', 
-        'log_data-ranges_avg',
-        'network_fragmented-packets', 
-        'network_interval-packets',
-        'network_packets_all_count',
-        'network_ips_all_count',
-        'network_packet-size_std_deviation',
-        'network_protocols_all_count',
-        'network_time-delta_avg',
-        'network_ttl_avg',
-        'network_window-size_avg',
-        'network_ip-flags_max', 
-        'network_tcp-flags-psh_count',
-    ] + (whitelist if whitelist else []) + (newohecols) + (newfcols)]
+    
+    fixed_cols = [
+        'log_messages_count', 'log_data-ranges_avg',
+        'network_fragmented-packets', 'network_interval-packets',
+        'network_packets_all_count', 'network_ips_all_count',
+        'network_packet-size_std_deviation', 'network_protocols_all_count',
+        'network_time-delta_avg', 'network_ttl_avg',
+        'network_window-size_avg', 'network_ip-flags_max', 
+        'network_tcp-flags-psh_count'
+    ]
+    
+    whitelist = whitelist if whitelist else []
+    
+    all_final_cols = fixed_cols + whitelist + newohecols + newfcols
+    
+    existing_cols = [c for c in all_final_cols if c in df.columns]
+    
+    return df[existing_cols]
 
 def first_clean(df: pd.DataFrame, classes: int):
     
@@ -363,9 +365,9 @@ if __name__ == "__main__":
                 target = 'label3'
             
             le = LabelEncoder()
-            y = le.fit_transform(df[target])
+            y = le.fit_transform(dfmerged[target])
             target_cols = ['label_full', 'label1', 'label2', 'label3', 'label4']
-            df_aux = df.drop(columns=target_cols)
+            df_aux = dfmerged.drop(columns=target_cols)
             df_aux, y = undersampling(df_aux, y)
             df_aux['target'] = y
             
