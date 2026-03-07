@@ -92,6 +92,7 @@ def limpieza_basica(df: pd.DataFrame) -> pd.DataFrame:
     pass
 
 def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.DataFrame:
+    logging.info("Extrayendo las columnas default del CIC...")
     df = clean_csv_lists(df)
     df, newfcols = frequency_encoding(df, 'network_ports_all')
     df, newohecols = frequency_encoding(df, 'log_data-types')
@@ -356,7 +357,7 @@ if __name__ == "__main__":
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
             if i == 0:
                 target = 'label1'
-            if i == 1:
+            elif i == 1:
                 target = 'label2'
             else:
                 target = 'label3'
