@@ -83,8 +83,9 @@ def undersampling(df: pd.DataFrame, target) -> pd.DataFrame:
     # df = df[df[target].isin(counts[counts > 10].index)]
     
     rus = RandomUnderSampler(random_state=42)
-    df, target = rus.fit_resample(df, target)
-    return df, target
+    X_res, target = rus.fit_resample(df, target)
+    df_res = pd.DataFrame(X_res, columns=df.columns)
+    return df_res, target
 
 def limpieza_basica(df: pd.DataFrame) -> pd.DataFrame:
     #TODO
