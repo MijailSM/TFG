@@ -324,7 +324,7 @@ if __name__ == "__main__":
     parser.add_argument("-Fd", "--feature_selection_columns", action="store_true", help="Solo conserva las columnas del feature selection del CIC", default=False)
     parser.add_argument("-Fs", "--feature_selection", action="store_true", help="Se realiza el algoritmo de Feature Selection", default=False)
     parser.add_argument("-T", "--target_list", action="store_true", help="Mostrar todos los target", default=False)
-    parser.add_argument("-n", "--name", type=str, default="csv/Merged_DF.csv", help="Nombre del csv final")
+    parser.add_argument("-n", "--name", type=str, default="Merged_DF.csv", help="Nombre del csv final")
     
     #Añadir las columnas una vez terminado el feature selection
     args = parser.parse_args()
@@ -371,7 +371,7 @@ if __name__ == "__main__":
             if args.name.endswith('.csv') == False:
                 args.name = args.name + '.csv'
             logging.info(f"Guardando csv como: {target}_{args.name}...")
-            df_aux.to_csv(f"{target}_{args.name}")
+            df_aux.to_csv(f"csv/{target}_{args.name}", index=False)
         
         
         
