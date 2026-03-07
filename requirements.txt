@@ -11,6 +11,7 @@ bleach==6.3.0
 certifi==2026.1.4
 cffi==2.0.0
 charset-normalizer==3.4.4
+cloudpickle==3.1.2
 comm==0.2.3
 contourpy==1.3.3
 cycler==0.12.1
@@ -78,6 +79,7 @@ psutil==7.2.1
 ptyprocess==0.7.0
 pure_eval==0.2.3
 pycparser==3.0
+pygad==3.5.0
 Pygments==2.19.2
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
