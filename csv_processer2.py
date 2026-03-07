@@ -110,7 +110,6 @@ def feature_selection_CICcols(df: pd.DataFrame, whitelist: list=None) -> pd.Data
         'network_window-size_avg',
         'network_ip-flags_max', 
         'network_tcp-flags-psh_count',
-        'port_frequency_avg',
     ] + (whitelist if whitelist else []) + (newohecols) + (newfcols)]
 
 def first_clean(df: pd.DataFrame, classes: int):
