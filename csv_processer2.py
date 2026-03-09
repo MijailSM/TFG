@@ -13,6 +13,7 @@ import pygad
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from imblearn.under_sampling import RandomUnderSampler
+import collections
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -78,11 +79,18 @@ def tar_extract(filename: str):
         exit(1)
     return df
 
-def undersampling(df: pd.DataFrame, target) -> pd.DataFrame:
+def undersampling(df: pd.DataFrame, target, samples=15000) -> pd.DataFrame:
     # counts = df["target"].value_counts()
     # df = df[df[target].isin(counts[counts > 10].index)]
     
-    rus = RandomUnderSampler(random_state=42)
+    counter = collections.Counter(target)
+    strategy = {
+        label: min(count, samples) for label, count in counter.items()
+    }
+    if len(counter) > 2:
+        rus = RandomUnderSampler(random_state=42, sampling_strategy=strategy)
+    else:
+        rus = RandomUnderSampler(random_state=42)
     X_res, target = rus.fit_resample(df, target)
     df_res = pd.DataFrame(X_res, columns=df.columns)
     return df_res, target
@@ -368,7 +376,7 @@ if __name__ == "__main__":
             y = le.fit_transform(dfmerged[target])
             target_cols = ['label_full', 'label1', 'label2', 'label3', 'label4']
             df_aux = dfmerged.drop(columns=target_cols)
-            df_aux, y = undersampling(df_aux, y)
+            #df_aux, y = undersampling(df_aux, y)
             df_aux['target'] = y
             
             if args.name.endswith('.csv') == False:
