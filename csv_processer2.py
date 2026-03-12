@@ -339,12 +339,13 @@ if __name__ == "__main__":
     
     #Añadir las columnas una vez terminado el feature selection
     args = parser.parse_args()
+    if args.name.endswith('.csv') == False:
+        args.name = args.name + '.csv'
     
     csvs = []
     for filename in tqdm.tqdm(args.input, desc="Procesando archivos...", unit="archivo", bar_format=custom_bar):
         if filename.endswith(".tar.xz"):
-            f = tar_extract(filename)
-            df = pd.read_csv(io.BytesIO(f.read()))
+            df = tar_extract(filename)
         else:
             df = pd.read_csv(filename)
         csvs.append(df)
@@ -363,7 +364,7 @@ if __name__ == "__main__":
         dfmerged, final_features = feature_selection(dfmerged, 1)
         logging.info(f"Las columnas generadas son {final_features}")
     
-    if args.feature_selection == False:
+    if args.feature_selection_columns == True:
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
             if i == 0:
                 target = 'label1'
@@ -379,10 +380,11 @@ if __name__ == "__main__":
             #df_aux, y = undersampling(df_aux, y)
             df_aux['target'] = y
             
-            if args.name.endswith('.csv') == False:
-                args.name = args.name + '.csv'
             logging.info(f"Guardando csv como: {target}_{args.name}...")
             df_aux.to_csv(f"csv/{target}_{args.name}", index=False)
+    else:
+        logging.info(f"Guardando csv como: {args.name}...")
+        dfmerged.to_csv(f"csv/{args.name}", index=False)
         
         
         
