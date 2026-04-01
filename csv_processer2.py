@@ -14,6 +14,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from imblearn.under_sampling import RandomUnderSampler
 import collections
+import joblib
+import re
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -79,13 +81,14 @@ def tar_extract(filename: str):
         exit(1)
     return df
 
-def undersampling(df: pd.DataFrame, target, samples=15000) -> pd.DataFrame:
+def undersampling(df: pd.DataFrame, target, samples=5000) -> pd.DataFrame:
     # counts = df["target"].value_counts()
     # df = df[df[target].isin(counts[counts > 10].index)]
-    
+    clase = 0
     counter = collections.Counter(target)
+    print(f"Original: {counter}")
     strategy = {
-        label: min(count, samples) for label, count in counter.items()
+        clase: samples
     }
     if len(counter) > 2:
         rus = RandomUnderSampler(random_state=42, sampling_strategy=strategy)
@@ -131,9 +134,8 @@ def first_clean(df: pd.DataFrame, classes: int):
         target = 'label2'
     elif classes == 3:
         target = 'label3'
-    
-    df = df.drop(columns=[
-        'timestamp', 
+        
+    columns_remove = ('timestamp', 
         'timestamp_start', 
         'timestamp_end', 
         'network_ips_all', 
@@ -143,8 +145,13 @@ def first_clean(df: pd.DataFrame, classes: int):
         'network_macs_dst',
         'network_macs_src',
         'device_name',
-        'device_mac'
-    ])
+        'device_mac')
+    rest = []
+    for col in columns_remove:
+        if col in df.columns:
+            rest.append(col)
+    
+    df = df.drop(columns=rest)
     
     y = df[target]
     
@@ -185,7 +192,6 @@ def one_hot_encoding(df: pd.DataFrame, col) -> tuple[pd.DataFrame, list]:
     df = pd.concat([df, dummies], axis=1)
     df.drop(columns=[col], inplace=True)
     return df, new_cols
-    
 
 def feature_selection(df: pd.DataFrame, classes: int, threshold: int=15) -> pd.DataFrame:
     
@@ -335,6 +341,7 @@ if __name__ == "__main__":
     parser.add_argument("-Fd", "--feature_selection_columns", action="store_true", help="Solo conserva las columnas del feature selection del CIC", default=False)
     parser.add_argument("-Fs", "--feature_selection", action="store_true", help="Se realiza el algoritmo de Feature Selection", default=False)
     parser.add_argument("-T", "--target_list", action="store_true", help="Mostrar todos los target", default=False)
+    #parser.add_argument("-cF", "--cic_fclean", action="store_true", help="Limpieza básica de los archivos de salida del cicflowmeter", default=False)
     parser.add_argument("-n", "--name", type=str, default="Merged_DF.csv", help="Nombre del csv final")
     
     #Añadir las columnas una vez terminado el feature selection
@@ -377,11 +384,13 @@ if __name__ == "__main__":
             y = le.fit_transform(dfmerged[target])
             target_cols = ['label_full', 'label1', 'label2', 'label3', 'label4']
             df_aux = dfmerged.drop(columns=target_cols)
-            #df_aux, y = undersampling(df_aux, y)
+            if i == 1:
+                df_aux, y = undersampling(df_aux, y)
             df_aux['target'] = y
             
             logging.info(f"Guardando csv como: {target}_{args.name}...")
             df_aux.to_csv(f"csv/{target}_{args.name}", index=False)
+            joblib.dump(le, f'csv/le/le_{target}_{args.name}')
     else:
         logging.info(f"Guardando csv como: {args.name}...")
         dfmerged.to_csv(f"csv/{args.name}", index=False)
