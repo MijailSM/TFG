@@ -1,21 +1,9 @@
-import pandas as pd
-import tqdm
+import dask.dataframe as dd
 
-file = '/mnt/datos/AllCicMerged.csv'
-label = 'label1'
+# 1. Carga virtual del archivo (no ocupa RAM al inicio)
+df = dd.read_csv('/mnt/datos/AllCicMerged.csv')
 
-conteos = {}
+# 2. Contar etiquetas de forma masiva usando todos los núcleos
+counts = df['label1'].value_counts().compute() 
 
-reader = pd.read_csv(file, usecols=[label], chunksize=10000)
-
-for chunk in tqdm.tqdm(reader, desc="Leyendo etiqueta...", unit="Chunk"):
-    conteo = chunk[label].value_counts()
-    
-    for value, count in conteo.items():
-        conteos[label] = conteos.get(label, 0) + count
-        
-total = sum(conteos.values())
-print("RESUMEN")
-for value, count in conteos.items():
-    percentage = (count / total) * 100
-    print(f"{value}: {count} filas ({percentage:.2f}%)")
+print(counts)
