@@ -3,7 +3,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
-from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV, cross_val_score
 from sklearn.preprocessing import StandardScaler
 import sys
 import pandas as pd
@@ -12,6 +12,7 @@ import os
 import time
 import argparse
 from imblearn.over_sampling import SMOTE
+import optuna
 
 
 def main():
@@ -40,21 +41,14 @@ def main():
     models = {
         "RandomForest": RandomForestClassifier(random_state=42),
         "kNN": KNeighborsClassifier(),
-        "MLP": MLPClassifier(random_state=42, early_stopping=True),
         "NaiveBayes": GaussianNB()
     }
 
     search_grid = {
         "RandomForest": {
-            "n_estimators": [100, 200, 300],
+            "n_estimators": [50, 100, 200, 300],
             "max_depth": [10, 20, None],
             "min_samples_split": [2, 5]
-        },
-        "MLP": {
-            "hidden_layer_sizes": [(50, 50), (100,)],
-            "activation": ['tanh', 'relu'],
-            "learning_rate_init": [0.001, 0.01],
-            "max_iter": [200, 500]
         },
         "kNN": {
             "n_neighbors": [3, 5, 11],
@@ -82,6 +76,49 @@ def main():
         
         mejores_modelos[nombre] = search.best_estimator_
         print(f"Mejores parámetros para {nombre}: {search.best_params_}")
+        
+        
+        
+    def objetive(trial):
+        n_layers = trial.suggest_int("n_layers", 1, 3)
+        layers = []
+        for i in range(n_layers):
+            layers.append(trial.suggest_int(f"n_units_l{i}", 32, 256, log=True))
+        
+        params = {
+            'hidden_layer_sizes': tuple(layers),
+            'activation': trial.suggest_categorical("activation", ["relu", "tanh"]),
+            'solver': 'adam',
+            'alpha': trial.suggest_float("alpha", 1e-5, 1e-2, log=True),
+            'learning_rate_init': trial.suggest_float("learning_rate_init", 1e-4, 1e-2, log=True),
+            'max_iter': 500,
+            'random_state': 42
+        }
+        
+        model = MLPClassifier(**params)
+        
+        score = cross_val_score(model, X_train_scaled, y_train, cv=3, n_jobs=-1, scoring='f1_macro').mean()
+        
+        return score
+    
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objetive, n_trials=30)
+    
+    best_params = study.best_params
+    
+    layers = [best_params[f"n_units_l{i}"] for i in range(best_params["n_layers"])]
+
+    final_model = MLPClassifier(
+        hidden_layer_sizes=tuple(layers),
+        activation=best_params["activation"],
+        alpha=best_params["alpha"],
+        learning_rate_init=best_params["learning_rate_init"],
+        max_iter=500,
+        random_state=42
+    )    
+    mejores_modelos["MLP"] = final_model
+        
+    
         
     folder = 'joblibs'
     if not os.path.exists(folder):
