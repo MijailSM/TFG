@@ -1,4 +1,8 @@
 import dask.dataframe as dd
+from dask.distributed import Client
+
+client = Client()
+print(f"Dashboard en {client.dashboard_link}")
 
 # 1. Carga virtual del archivo (no ocupa RAM al inicio)
 df = dd.read_csv('/mnt/datos/AllCicMerged.csv')
