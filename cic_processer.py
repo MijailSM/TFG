@@ -12,7 +12,7 @@ for chunk in tqdm.tqdm(reader, desc="Leyendo etiqueta...", unit="Chunk"):
     conteo = chunk[label].value_counts()
     
     for value, count in conteo.items():
-        conteos[label] = conteos.get(label, 0) + value
+        conteos[label] = conteos.get(label, 0) + count
         
 total = sum(conteos.values())
 print("RESUMEN")
