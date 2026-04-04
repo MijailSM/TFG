@@ -7,7 +7,7 @@ def process():
 
         df = dd.read_csv('/mnt/datos/AllCicMerged.csv')
 
-        counts = df['label1'].value_counts().compute() 
+        counts = df['label2'].value_counts().compute() 
 
         print("\n--- RESULTADOS ---")
         print(counts)

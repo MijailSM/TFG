@@ -116,7 +116,9 @@ def main():
         max_iter=500,
         random_state=42
     )    
+    final_model.fit(X_train_scaled, y_train)
     mejores_modelos["MLP"] = final_model
+    
         
     
         
