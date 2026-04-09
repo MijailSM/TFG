@@ -48,5 +48,6 @@ def balance_data():
         print("Muestreo completado y guardado.")
 
 if __name__ == "__main__":
-    with dask.config.set({'temporary_directory': '/mnt/datos/temp'}):
-        balance_data()
+    #with dask.config.set({'temporary_directory': '/mnt/datos/temp'}):
+    #    balance_data()
+    balance_data()
