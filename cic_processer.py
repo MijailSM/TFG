@@ -1,5 +1,7 @@
 import dask.dataframe as dd
 from dask.distributed import Client
+import dask
+import os
 
 def process():
     with Client() as client:
@@ -17,6 +19,9 @@ import dask.dataframe as dd
 from dask.distributed import Client
 
 def balance_data():
+    tmp_dir = "/mnt/datos/dask-temp"
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
     with Client() as client:
         df = dd.read_csv('/mnt/datos/AllCicMerged.csv')
 
@@ -43,4 +48,5 @@ def balance_data():
         print("Muestreo completado y guardado.")
 
 if __name__ == "__main__":
-    balance_data()
+    with dask.config.set({'temporary_directory': '/mnt/datos/temp'}):
+        balance_data()

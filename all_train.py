@@ -101,8 +101,37 @@ def main():
         
         return score
     
+    def objective_exhaustive(trial):
+        n_layers = trial.suggest_int("n_layers", 1, 4)
+        layers = []
+        for i in range(n_layers):
+            layers.append(trial.suggest_int(f"n_units_l{i}", 32, 512, log=True))
+        
+        solver = trial.suggest_categorical("solver", ["adam", "sgd"])
+
+        params = {
+            'hidden_layer_sizes': tuple(layers),
+            'activation': trial.suggest_categorical("activation", ["relu", "tanh", "logistic"]),
+            'solver': solver,
+            'alpha': trial.suggest_float("alpha", 1e-6, 1e-1, log=True),
+            'learning_rate_init': trial.suggest_float("learning_rate_init", 1e-5, 1e-2, log=True),
+            'learning_rate': trial.suggest_categorical("learning_rate", ["constant", "invscaling", "adaptive"]),
+            'batch_size': trial.suggest_categorical("batch_size", [32, 64, 128, 256, "auto"]),
+            'max_iter': 1000, # Aumentamos para asegurar convergencia en redes profundas
+            'early_stopping': True, # Evita que la red aprenda de memoria (overfitting)
+            'validation_fraction': 0.1,
+            'random_state': 42
+        }
+        
+        model = MLPClassifier(**params)
+        
+        # Usamos f1_macro porque para 60 clases el accuracy es una métrica "mentirosa"
+        score = cross_val_score(model, X_train_scaled, y_train, cv=3, n_jobs=-1, scoring='f1_macro').mean()
+        
+        return score
+    
     study = optuna.create_study(direction="maximize")
-    study.optimize(objetive, n_trials=30)
+    study.optimize(objective_exhaustive, n_trials=30)
     
     best_params = study.best_params
     
