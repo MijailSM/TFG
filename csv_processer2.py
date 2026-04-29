@@ -341,6 +341,7 @@ if __name__ == "__main__":
     parser.add_argument("-Fd", "--feature_selection_columns", action="store_true", help="Solo conserva las columnas del feature selection del CIC", default=False)
     parser.add_argument("-Fs", "--feature_selection", action="store_true", help="Se realiza el algoritmo de Feature Selection", default=False)
     parser.add_argument("-T", "--target_list", action="store_true", help="Mostrar todos los target", default=False)
+    parser.add_argument("-u", "--undersampling", action="store_true", help="Undersample", default=False)
     #parser.add_argument("-cF", "--cic_fclean", action="store_true", help="Limpieza básica de los archivos de salida del cicflowmeter", default=False)
     parser.add_argument("-n", "--name", type=str, default="Merged_DF.csv", help="Nombre del csv final")
     
@@ -384,8 +385,19 @@ if __name__ == "__main__":
             y = le.fit_transform(dfmerged[target])
             target_cols = ['label_full', 'label1', 'label2', 'label3', 'label4']
             df_aux = dfmerged.drop(columns=target_cols)
-            if i == 1:
-                df_aux, y = undersampling(df_aux, y)
+            
+            if args.undersampling == True:
+                if i == 0:
+                    rus = RandomUnderSampler(sampling_strategy={0: 90000})
+                    X_aux, y = rus.fit_resample(df_aux, y)
+                    df_aux = pd.DataFrame(X_aux, columns=df_aux.columns)
+                if i == 1:
+                    rus = RandomUnderSampler(sampling_strategy={6: 18000, 0: 18000})
+                    df_aux, y = rus.fit_resample(df_aux, y)
+                    X_aux, y = rus.fit_resample(df_aux, y)
+                    df_aux = pd.DataFrame(X_aux, columns=df_aux.columns)
+                
+                
             df_aux['target'] = y
             
             logging.info(f"Guardando csv como: {target}_{args.name}...")
