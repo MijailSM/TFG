@@ -387,6 +387,7 @@ if __name__ == "__main__":
             df_aux = dfmerged.drop(columns=target_cols)
             
             if args.undersampling == True:
+                logging.info("Realizando undersampling...")
                 if i == 0:
                     rus = RandomUnderSampler(sampling_strategy={0: 90000})
                     X_aux, y = rus.fit_resample(df_aux, y)
