@@ -389,11 +389,11 @@ if __name__ == "__main__":
             if args.undersampling == True:
                 logging.info("Realizando undersampling...")
                 if i == 0:
-                    rus = RandomUnderSampler(sampling_strategy={0: 90000})
+                    rus = RandomUnderSampler(sampling_strategy={1: 13000})
                     X_aux, y = rus.fit_resample(df_aux, y)
                     df_aux = pd.DataFrame(X_aux, columns=df_aux.columns)
                 if i == 1:
-                    rus = RandomUnderSampler(sampling_strategy={6: 18000, 0: 18000})
+                    rus = RandomUnderSampler(sampling_strategy={6: 3200, 0: 3200})
                     df_aux, y = rus.fit_resample(df_aux, y)
                     X_aux, y = rus.fit_resample(df_aux, y)
                     df_aux = pd.DataFrame(X_aux, columns=df_aux.columns)
