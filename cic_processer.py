@@ -9,7 +9,7 @@ def balance_data():
         os.makedirs(tmp_dir)
 
     # Iniciamos el cliente para ver el dashboard y mejorar el manejo de memoria
-    with Client(n_workers=4, threads_per_worker=2, memory_limit='4GB') as client:
+    with Client(n_workers=4, threads_per_worker=2) as client:
         print(f"Dashboard en {client.dashboard_link}")
 
         # 1. Cargar el dataset
