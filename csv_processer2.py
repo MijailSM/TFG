@@ -12,7 +12,8 @@ import numpy as np
 import pygad
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
-from imblearn.under_sampling import RandomUnderSampler
+from imblearn.under_sampling import RandomUnderSampler, EditedNearestNeighbours
+from imblearn.pipeline import Pipeline
 import collections
 import joblib
 import re
@@ -384,20 +385,7 @@ if __name__ == "__main__":
             le = LabelEncoder()
             y = le.fit_transform(dfmerged[target])
             target_cols = ['label_full', 'label1', 'label2', 'label3', 'label4']
-            df_aux = dfmerged.drop(columns=target_cols)
-            
-            if args.undersampling == True:
-                logging.info("Realizando undersampling...")
-                if i == 0:
-                    rus = RandomUnderSampler(sampling_strategy={1: 13000})
-                    X_aux, y = rus.fit_resample(df_aux, y)
-                    df_aux = pd.DataFrame(X_aux, columns=df_aux.columns)
-                if i == 1:
-                    rus = RandomUnderSampler(sampling_strategy={6: 3200, 0: 3200})
-                    df_aux, y = rus.fit_resample(df_aux, y)
-                    X_aux, y = rus.fit_resample(df_aux, y)
-                    df_aux = pd.DataFrame(X_aux, columns=df_aux.columns)
-                
+            df_aux = dfmerged.drop(columns=target_cols)    
                 
             df_aux['target'] = y
             

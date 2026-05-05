@@ -14,9 +14,11 @@ import argparse
 from imblearn.over_sampling import SMOTE
 import optuna
 import generate_joblib_folder
+from imblearn.under_sampling import RandomUnderSampler, EditedNearestNeighbours
+from imblearn.pipeline import Pipeline
 
 
-def process(input, folder):
+def process(input, folder, tarea):
     
     print("Leyendo Dataset...")
     df = pd.read_csv(input)
@@ -28,6 +30,14 @@ def process(input, folder):
     X = df.drop(columns=['target'])
     y = df['target']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    
+    print("Realizando undersampling...")
+    if tarea != '60clases':
+        enn_1s = EditedNearestNeighbours(sampling_strategy=[0], n_neighbors=3)
+    else:
+        enn_1s = EditedNearestNeighbours(sampling_strategy=[4], n_neighbors=3)
+    X_train, y_train = enn_1s.fit_resample(X_train, y_train)
+    
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)
@@ -163,10 +173,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Archivo csv para el entrenamiento y validacion")
     arguments = parser.parse_args()
-    folder = '30-04-2026-DefaultCIC-1sec-UnderbalancedRecBen'
+    folder = '03-05-2026-DefaultCIC-5sec-UnderbalancedBenEnnESP'
     generate_joblib_folder.create(folder)
     
     
     tareas = {'2clases': 'label1', '8clases': 'label2', '60clases': 'label3'}
     for tarea in tareas.items():
-        process(f"csv/{tarea[1]}_{arguments.input}", f"{folder}/{tarea[0]}")
+        process(f"csv/{tarea[1]}_{arguments.input}", f"{folder}/{tarea[0]}", tarea[0])

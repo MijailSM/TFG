@@ -4,3 +4,6 @@ csv/
 local_joblibs/
 joblibs/
 cicflowmeter/
+pdfs/
+reconcsvs/
+webcsvs/
