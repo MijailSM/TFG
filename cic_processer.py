@@ -1,52 +1,52 @@
 import dask.dataframe as dd
 from dask.distributed import Client
-import dask
 import os
 
 def balance_data():
-    tmp_dir = "/mnt/datos/dask-temp"
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir)
-
-    # Configuramos el cliente con límites más estrictos para evitar el crash de memoria
+    # 1. Configuración de recursos muy conservadora
+    # 1 thread por worker evita que compitan por la misma RAM
     with Client(n_workers=4, threads_per_worker=1, memory_limit='2GB') as client:
-        print(f"Dashboard en {client.dashboard_link}")
+        
+        # Leer con blocksize pequeño para no saturar
+        df = dd.read_csv('/mnt/datos/AllCicMerged.csv', blocksize="50MB")
 
-        # 1. Cargar el dataset con blocksize pequeño para controlar RAM
-        df = dd.read_csv('/mnt/datos/AllCicMerged.csv', blocksize="100MB")
-
-        print("Calculando frecuencias originales...")
+        # 2. Obtener conteos (esto es rápido)
+        print("Obteniendo conteos...")
         counts = df['label2'].value_counts().compute()
-        
         target_count = counts['benign']
-        print(f"Valor de referencia (benign): {target_count}")
-
-        fractions = {
-            label: min(1.0, target_count / count) 
-            for label, count in counts.items()
-        }
-
-        # 4. Aplicar el muestreo
-        # El truco aquí es usar group_keys=False si fuera pandas, 
-        # pero en Dask lo resolvemos reseteando el índice después.
-        balanced_df = df.groupby('label2', group_keys=False).apply(
-            lambda x: x.sample(frac=fractions[x.name], random_state=42), 
-            meta=df.dtypes.to_dict() # Usamos los tipos directos como meta
-        )
-
-        # 5. IMPORTANTE: Limpiar el índice
-        # groupby.apply suele crear un índice multinivel que to_csv no maneja bien
-        balanced_df = balanced_df.reset_index(drop=True)
-
-        output_path = '/mnt/datos/output/AllCicMerged_Balanced_Selective-*.csv'
-        print(f"Guardando datos balanceados en {output_path}...")
         
-        # Guardamos como múltiples archivos para no saturar la RAM
-        balanced_df.to_csv(output_path, index=False)
+        # 3. Lista para guardar los fragmentos procesados
+        sampled_fragments = []
+
+        print("Iniciando muestreo por clase (evitando groupby)...")
+        for label, count in counts.items():
+            # Filtramos la clase actual
+            condition = (df['label2'] == label)
+            class_df = df[condition]
+            
+            if count > target_count:
+                # Si es mayor que benign, calculamos fracción para reducir
+                frac = target_count / count
+                print(f" - Reduciendo {label} al {frac*100:.2f}%")
+                sampled_fragments.append(class_df.sample(frac=frac, random_state=42))
+            else:
+                # Si es menor o igual, la dejamos completa
+                print(f" - Manteniendo {label} al 100%")
+                sampled_fragments.append(class_df)
+
+        # 4. Concatenar todos los fragmentos muestreados
+        balanced_df = dd.concat(sampled_fragments)
+
+        # 5. Guardar (IMPORTANTE: Usar un directorio, no un archivo único)
+        output_dir = '/mnt/datos/output/balanced_csv_parts/'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        print(f"Guardando particiones en {output_dir}...")
+        # El '*' es vital para que Dask escriba en paralelo sin colapsar
+        balanced_df.to_csv(output_dir + 'part-*.csv', index=False)
         
-        print("Muestreo completado y guardado exitosamente.")
+        print("¡Hecho!")
 
 if __name__ == "__main__":
-    # Asegúrate de que esta ruta tenga permisos de escritura
-    with dask.config.set({'temporary_directory': '/mnt/datos/dask-temp'}):
-        balance_data()
+    balance_data()
