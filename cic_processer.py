@@ -44,10 +44,10 @@ def balance_data():
         # 5. Guardar el resultado
         # Nota: to_csv generará múltiples archivos (particiones). 
         # Si quieres un solo archivo usa single_file=True (cuidado con el tamaño de RAM)
-        output_path = '/mnt/datos/AllCicMerged_Balanced_Selective.csv'
+        output_path = '/mnt/datos/output/AllCicMerged_Balanced_Selective.csv'
         print(f"Guardando datos balanceados en {output_path}...")
         
-        balanced_df.to_csv(output_path, index=False, single_file=True)
+        balanced_df.to_csv(output_path, index=False)
         
         print("Muestreo completado y guardado exitosamente.")
 
