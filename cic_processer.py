@@ -1,5 +1,6 @@
 import dask.dataframe as dd
 from dask.distributed import Client
+import dask
 import os
 
 def balance_data():
@@ -51,4 +52,5 @@ def balance_data():
         print("Muestreo completado y guardado exitosamente.")
 
 if __name__ == "__main__":
-    balance_data()
+    with dask.config.set({'temporary_directory': '/mnt/dask-temp'}):
+        balance_data()
