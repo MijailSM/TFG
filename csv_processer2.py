@@ -343,6 +343,7 @@ if __name__ == "__main__":
     parser.add_argument("-Fs", "--feature_selection", action="store_true", help="Se realiza el algoritmo de Feature Selection", default=False)
     parser.add_argument("-T", "--target_list", action="store_true", help="Mostrar todos los target", default=False)
     parser.add_argument("-u", "--undersampling", action="store_true", help="Undersample", default=False)
+    parser.add_argument("-s", "--split", action="store_true", help="Split dataset", default=False)
     #parser.add_argument("-cF", "--cic_fclean", action="store_true", help="Limpieza básica de los archivos de salida del cicflowmeter", default=False)
     parser.add_argument("-n", "--name", type=str, default="Merged_DF.csv", help="Nombre del csv final")
     
@@ -373,7 +374,7 @@ if __name__ == "__main__":
         dfmerged, final_features = feature_selection(dfmerged, 1)
         logging.info(f"Las columnas generadas son {final_features}")
     
-    if args.feature_selection_columns == True:
+    if args.feature_selection_columns == True or args.split == True:
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
             if i == 0:
                 target = 'label1'
