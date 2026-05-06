@@ -173,7 +173,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Archivo csv para el entrenamiento y validacion")
     arguments = parser.parse_args()
-    folder = '06-05-2026-CFM-Nobalan'
+    folder = '06-05-2026-CFM-NobalanNoinf'
     generate_joblib_folder.create(folder)
     
     
