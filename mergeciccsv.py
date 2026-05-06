@@ -4,7 +4,7 @@ import glob
 
 files = glob.glob('/mnt/datos/output/balanced_csv_parts/*.csv')
 archivo_salida = 'mnt/datos/output/MergedBalanced.csv'
-
+first = True
 for file in tqdm.tqdm(files, desc="Procesando csvs...", unit='file'):
     try:
         df = pd.read_csv(file)
