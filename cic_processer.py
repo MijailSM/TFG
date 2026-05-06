@@ -13,7 +13,14 @@ def balance_data():
         # 2. Obtener conteos (esto es rápido)
         print("Obteniendo conteos...")
         counts = df['label2'].value_counts().compute()
-        target_count = counts['benign']
+        counts_dict = counts.to_dict()  # ← acceso por dict, no por índice de Dask
+
+        print("Clases encontradas:", list(counts_dict.keys()))
+
+        if 'benign' not in counts_dict:
+            raise ValueError(f"'benign' no encontrado. Clases: {list(counts_dict.keys())}")
+
+        target_count = counts_dict['benign']
         
         # 3. Lista para guardar los fragmentos procesados
         sampled_fragments = []
