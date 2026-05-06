@@ -8,7 +8,7 @@ def balance_data():
     with Client(n_workers=4, threads_per_worker=1, memory_limit='2GB') as client:
         
         # Leer con blocksize pequeño para no saturar
-        df = dd.read_csv('/mnt/datos/AllCicMerged.csv', blocksize="50MB")
+        df = dd.read_csv('/mnt/datos/AllCicMerged.csv', blocksize="100MB")
 
         # 2. Obtener conteos (esto es rápido)
         print("Obteniendo conteos...")
