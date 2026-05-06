@@ -1,59 +1,74 @@
 import dask.dataframe as dd
 from dask.distributed import Client
+import numpy as np
 import os
 
 def balance_data():
-    # 1. Configuración de recursos muy conservadora
-    # 1 thread por worker evita que compitan por la misma RAM
+    # 1. Configuración de recursos
     with Client(n_workers=4, threads_per_worker=1, memory_limit='2GB') as client:
         
-        # Leer con blocksize pequeño para no saturar
-        df = dd.read_csv('/mnt/datos/AllCicMerged.csv', blocksize="100MB")
+        # Forzamos tipos para evitar errores de inferencia
+        tipos = {
+            'label2': 'string',
+            'Flow Duration': 'float64'
+        }
 
-        # 2. Obtener conteos (esto es rápido)
-        print("Obteniendo conteos...")
+        print("Leyendo dataset...")
+        df = dd.read_csv('/mnt/datos/AllCicMerged.csv', blocksize="100MB", dtype=tipos)
+
+        # 2. Definir el objetivo (basado en 'benign')
+        # Calculamos el conteo inicial solo para saber cuánto necesitamos
         counts = df['label2'].value_counts().compute()
         target_count = counts['benign']
         
-        # 3. Lista para guardar los fragmentos procesados
         sampled_fragments = []
 
-        print("Iniciando muestreo por clase (evitando groupby)...")
+        print(f"Iniciando limpieza y balanceo. Objetivo: {target_count} filas reales por clase...")
+
         for label, count in counts.items():
-            # Filtramos la clase actual
-            condition = (df['label2'] == label)
-            class_df = df[condition]
+            # A. Filtramos la clase actual
+            class_df = df[df['label2'] == label]
             
-            clean_df = class_df[class_df['Flow Duration'] != 0]
-            clean_count = clean_df.shape[0].compute()
+            # B. LIMPIEZA RADICAL: Solo nos quedamos con lo que sirve
+            # Reemplazamos infinitos por NaN para poder usar dropna de forma uniforme
+            class_df = class_df.replace([np.inf, -np.inf], np.nan)
+            
+            # Eliminamos filas donde 'Flow Duration' sea NaN o 0
+            # Esto soluciona el error de la imagen al limpiar la columna antes del filtro lógico
+            clean_df = class_df.dropna(subset=['Flow Duration'])
+            clean_df = clean_df[clean_df['Flow Duration'] > 0]
+            
+            # C. Conteo de filas "reales" disponibles
+            available_clean_count = len(clean_df)
+            print(f" - Clase {label}: {available_clean_count} filas válidas encontradas.")
 
-            if clean_count == 0:
-                print(f" - AVISO: {label} no tiene filas válidas (Duration > 0), saltando.")
+            if available_clean_count == 0:
+                print(f" - AVISO: {label} no tiene datos válidos. Saltando.")
                 continue
-            
-            if count > target_count:
-                # Si es mayor que benign, calculamos fracción para reducir
-                frac = target_count / count
-                print(f" - Reduciendo {label} al {frac*100:.2f}%")
-                sampled_fragments.append(class_df.sample(frac=frac, random_state=42))
-            else:
-                # Si es menor o igual, la dejamos completa
-                print(f" - Manteniendo {label} al 100%")
-                sampled_fragments.append(class_df)
 
-        # 4. Concatenar todos los fragmentos muestreados
+            # D. Muestreo sobre los datos limpios
+            if available_clean_count > target_count:
+                # Si sobran, reducimos para igualar a benign
+                frac = target_count / available_clean_count
+                sampled_fragments.append(clean_df.sample(frac=frac, random_state=42))
+                print(f"   -> Muestreadas {target_count} filas (Reducción).")
+            else:
+                # Si faltan o es igual, nos quedamos con todos los que sean "reales"
+                sampled_fragments.append(clean_df)
+                print(f"   -> Manteniendo todas las {available_clean_count} filas válidas.")
+
+        # 3. Consolidación y Guardado
+        print("Concatenando resultados limpios...")
         balanced_df = dd.concat(sampled_fragments)
 
-        # 5. Guardar (IMPORTANTE: Usar un directorio, no un archivo único)
-        output_dir = '/mnt/datos/output/balanced_csv_parts/'
+        output_dir = '/mnt/datos/output/balanced_real_data/'
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        print(f"Guardando particiones en {output_dir}...")
-        # El '*' es vital para que Dask escriba en paralelo sin colapsar
+        print(f"Guardando en {output_dir}...")
         balanced_df.to_csv(output_dir + 'part-*.csv', index=False)
         
-        print("¡Hecho!")
+        print("¡Hecho! El CSV resultante ya no tiene infinitos ni duraciones nulas.")
 
 if __name__ == "__main__":
     balance_data()
