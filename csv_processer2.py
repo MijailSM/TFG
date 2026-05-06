@@ -170,6 +170,23 @@ def first_clean(df: pd.DataFrame, classes: int):
     df = df.drop(columns=['label_full', 'label1', 'label2', 'label3', 'label4'])
     return df, y
 
+def limpieza_infinitos(df):
+    columnas_numericas = df.select_dtypes(include=[np.number]).columns
+    
+    for col in columnas_numericas:
+        # A. Manejar Infinitos: Reemplazar por el máximo finito
+        if np.isinf(df[col]).any():
+            max_finito = df.loc[~np.isinf(df[col]), col].max()
+            df[col] = df[col].replace([np.inf, -np.inf], max_finito)
+        
+        # B. Manejar NaNs (Nulos): Reemplazar por la mediana (o 0)
+        # Esto soluciona el error "Input X contains NaN"
+        if df[col].isnull().any():
+            mediana = df[col].median()
+            df[col] = df[col].fillna(mediana)
+            
+    return df
+
     
 def clean_csv_lists(df: pd.DataFrame) -> pd.DataFrame:
     cols = df.select_dtypes(include=['object', 'str']).columns
@@ -382,6 +399,7 @@ if __name__ == "__main__":
         logging.info(f"Las columnas generadas son {final_features}")
     elif args.split == True:
         dfmerged = delete_cfm_columns(dfmerged)
+        dfmerged = limpieza_infinitos(dfmerged)
     
     if args.feature_selection_columns == True or args.split == True:
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):

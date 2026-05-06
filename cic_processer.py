@@ -24,6 +24,13 @@ def balance_data():
             condition = (df['label2'] == label)
             class_df = df[condition]
             
+            clean_df = class_df[class_df['Flow Duration'] != 0]
+            clean_count = clean_df.shape[0].compute()
+
+            if clean_count == 0:
+                print(f" - AVISO: {label} no tiene filas válidas (Duration > 0), saltando.")
+                continue
+            
             if count > target_count:
                 # Si es mayor que benign, calculamos fracción para reducir
                 frac = target_count / count
