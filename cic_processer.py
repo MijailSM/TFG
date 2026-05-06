@@ -26,7 +26,7 @@ def balance_data():
         sampled_fragments = []
 
         print("Iniciando muestreo por clase (evitando groupby)...")
-        for label, count in counts.items():
+        for label, count in counts_dict.items(): 
             # Filtramos la clase actual
             condition = (df['label2'] == label)
             class_df = df[condition]
