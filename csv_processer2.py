@@ -386,6 +386,9 @@ if __name__ == "__main__":
             le = LabelEncoder()
             y = le.fit_transform(dfmerged[target])
             target_cols = ['label_full', 'label1', 'label2', 'label3', 'label4']
+            for i in target_cols:
+                if i not in df.columns:
+                    target_cols.remove(i)
             df_aux = dfmerged.drop(columns=target_cols)    
                 
             df_aux['target'] = y
