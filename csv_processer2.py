@@ -61,6 +61,13 @@ def mergecsvs(csvs: list) -> pd.DataFrame:
     
     return merged
 
+def delete_cfm_columns(df: pd.DataFrame):
+    target = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Timestamp', 'Label']
+    for i in target:
+        if i not in df.columns:
+            target.remove(i)
+    return df.drop(columns=target)
+
 def tar_extract(filename: str):
     """Extracts a Dataframe in a tar.xz type compression
 
@@ -373,6 +380,8 @@ if __name__ == "__main__":
     elif args.feature_selection == True:
         dfmerged, final_features = feature_selection(dfmerged, 1)
         logging.info(f"Las columnas generadas son {final_features}")
+    elif args.split == True:
+        dfmerged = delete_cfm_columns(dfmerged)
     
     if args.feature_selection_columns == True or args.split == True:
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
