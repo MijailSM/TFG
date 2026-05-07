@@ -7,7 +7,7 @@ import argparse
 import ast
 from group_lasso import GroupLasso
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import mutual_info_classif, VarianceThreshold
 import numpy as np
 import pygad
 from sklearn.ensemble import RandomForestClassifier
@@ -72,6 +72,22 @@ def delete_cfm_columns(df: pd.DataFrame):
     conteos = df['label3'].value_counts()
     clases_validas = conteos[conteos > 1].index
     return df[df['label3'].isin(clases_validas)]
+
+def limpieza_varianza(df: pd.DataFrame, threshold=0.01):
+    selector = VarianceThreshold(threshold=threshold)
+    selector.fit(df)
+    features = df.columns[selector.get_support()]
+    return df[features]
+
+def limpieza_correlacion(df: pd.DataFrame):
+    corr_matrix = df.corr().abs()
+    
+    upper = corr_matrix.where(
+        np.triu(np.ones(corr_matrix.shape), k=1).astype(bool)
+    )
+    
+    to_drop = [col for col in upper.columns if any(upper[col] > 0.95)]
+    return df.drop(columns=to_drop)
 
 def tar_extract(filename: str):
     """Extracts a Dataframe in a tar.xz type compression
@@ -405,6 +421,11 @@ if __name__ == "__main__":
     elif args.split == True:
         dfmerged = delete_cfm_columns(dfmerged)
         dfmerged = limpieza_infinitos(dfmerged)
+        y = dfmerged[['label1', 'label2', 'label3']]
+        dfmerged = dfmerged.drop(columns=['label1', 'label2', 'label3'])
+        dfmerged = limpieza_varianza(dfmerged)
+        dfmerged = limpieza_correlacion(dfmerged)
+        dfmerged = pd.concat([dfmerged, y], axis=1)
     
     if args.feature_selection_columns == True or args.split == True:
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):

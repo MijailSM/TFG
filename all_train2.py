@@ -54,8 +54,8 @@ def process(input, folder, tarea):
     search_grid = {
         "RandomForest": {
             "n_estimators": [50, 100, 200, 300],
-            "max_depth": [10, 20, None],
-            "min_samples_split": [2, 5]
+            "max_depth": [10, 20, 40, None],
+            "min_samples_split": [2, 5, None]
         },
         "kNN": {
             "n_neighbors": [3, 5, 8, 11],
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Archivo csv para el entrenamiento y validacion")
     arguments = parser.parse_args()
-    folder = '06-05-2026-CFM-NobalanNoinf'
+    folder = '07-05-2026-CFM-NobalanCleaned'
     generate_joblib_folder.create(folder)
     
     
