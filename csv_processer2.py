@@ -66,7 +66,12 @@ def delete_cfm_columns(df: pd.DataFrame):
     for i in target:
         if i not in df.columns:
             target.remove(i)
-    return df.drop(columns=target)
+            
+    df = df.drop(columns=target)
+    
+    conteos = df['label3'].value_counts()
+    clases_validas = conteos[conteos > 1].index
+    return df[df['label3'].isin(clases_validas)]
 
 def tar_extract(filename: str):
     """Extracts a Dataframe in a tar.xz type compression
