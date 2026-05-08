@@ -77,6 +77,7 @@ def limpieza_varianza(df: pd.DataFrame, threshold=0.01):
     selector = VarianceThreshold(threshold=threshold)
     selector.fit(df)
     features = df.columns[selector.get_support()]
+    logging.info(f"Columnas por varianza 0 eliminadas: {df.drop(columns=features).columns}")
     return df[features]
 
 def rf_feature(df: pd.DataFrame):
@@ -92,8 +93,9 @@ def rf_feature(df: pd.DataFrame):
     
     rf.fit(X, y)
     importances = pd.Series(rf.feature_importances_,index=X.columns).sort_values(ascending=False)
-    features = importances[importances > 0.001].index.to_list()
+    features = importances[importances > 0.002].index.to_list()
     features += ['label1', 'label2', 'label3']
+    logging.info(f"Columnas eliminadas por RF: {df.drop(columns=features).columns}")
     return df[features]
 
 def limpieza_correlacion(df: pd.DataFrame):
@@ -104,6 +106,7 @@ def limpieza_correlacion(df: pd.DataFrame):
     )
     
     to_drop = [col for col in upper.columns if any(upper[col] > 0.95)]
+    logging.info(f"Columnas eliminadas por correlacion: {to_drop}")
     return df.drop(columns=to_drop)
 
 def tar_extract(filename: str):
