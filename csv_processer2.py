@@ -62,7 +62,7 @@ def mergecsvs(csvs: list) -> pd.DataFrame:
     return merged
 
 def delete_cfm_columns(df: pd.DataFrame):
-    target = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Timestamp', 'Label']
+    target = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Timestamp', 'Label']
     for i in target:
         if i not in df.columns:
             target.remove(i)
