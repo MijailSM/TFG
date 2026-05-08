@@ -93,7 +93,7 @@ def rf_feature(df: pd.DataFrame):
     
     rf.fit(X, y)
     importances = pd.Series(rf.feature_importances_,index=X.columns).sort_values(ascending=False)
-    features = importances[importances > 0.002].index.to_list()
+    features = importances[importances > 0.0015].index.to_list()
     features += ['label1', 'label2', 'label3']
     logging.info(f"Columnas eliminadas por RF: {df.drop(columns=features).columns}")
     return df[features]

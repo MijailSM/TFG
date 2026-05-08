@@ -11,11 +11,41 @@ import joblib
 import os
 import time
 import argparse
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, SMOTENC
 import optuna
 import generate_joblib_folder
 from imblearn.under_sampling import RandomUnderSampler, EditedNearestNeighbours
 from imblearn.pipeline import Pipeline
+
+def balanceo_cfm(X_train, y_train, tarea):
+    if tarea == '8clases':
+        smt_strategy = {
+            1: 10000,
+            5: 10000
+        }
+        rus_strategy = {
+            0: 10000,
+            2: 10000,
+            3: 10000,
+            4: 10000,
+            6: 10000,
+            7: 10000
+        }
+        smote = SMOTENC(sampling_strategy=smt_strategy, random_state=42, k_neighbors=5, categorical_features=['Dst Port', 'Protocol', 'Fwd PSH Flags'])
+        X_train_bal, y_train_bal = smote.fit_resample(X_train, y_train)
+        rus = RandomUnderSampler(sampling_strategy=rus_strategy, random_state=42)
+        X_train_bal, y_train_bal = rus.fit_resample(X_train_bal, y_train_bal)
+    elif tarea == '2clases':
+        rus = RandomUnderSampler()
+        X_train_bal, y_train_bal = rus.fit_resample(X_train, y_train)
+    else:
+        X_train_bal, y_train_bal = X_train, y_train
+    print(f"Valores de cada clase: {y_train_bal.value_counts()}")
+    return (X_train_bal, y_train_bal)
+
+def balanceo_cfm2(X_train, y_train):
+    rus = RandomUnderSampler()
+    return rus.fit_resample(X_train, y_train)
 
 
 def process(input, folder, tarea):
@@ -38,10 +68,11 @@ def process(input, folder, tarea):
         enn_1s = EditedNearestNeighbours(sampling_strategy=[4], n_neighbors=3)
     X_train, y_train = enn_1s.fit_resample(X_train, y_train)
     """
+    #X_train, y_train = balanceo_cfm(X_train, y_train, tarea)
+    X_train, y_train = balanceo_cfm2(X_train, y_train)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)
-    
     
     
 
@@ -173,7 +204,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Archivo csv para el entrenamiento y validacion")
     arguments = parser.parse_args()
-    folder = '08-05-2026-CFM-NobalanCleanedRF2'
+    folder = '08-05-2026-CFM-NobalanCleanedRFBalancedRUS'
     generate_joblib_folder.create(folder)
     
     
