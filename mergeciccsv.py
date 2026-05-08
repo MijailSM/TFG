@@ -2,7 +2,7 @@ import tqdm
 import pandas as pd
 import glob
 
-files = glob.glob('/mnt/datos/output/balanced_csv_parts/*.csv')
+files = glob.glob('/mnt/datos/output/balanced_real_data/*.csv')
 archivo_salida = '/mnt/datos/output/MergedBalancedNOinf.csv'
 first = True
 for file in tqdm.tqdm(files, desc="Procesando csvs...", unit='file'):
