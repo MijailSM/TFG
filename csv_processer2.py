@@ -79,6 +79,23 @@ def limpieza_varianza(df: pd.DataFrame, threshold=0.01):
     features = df.columns[selector.get_support()]
     return df[features]
 
+def rf_feature(df: pd.DataFrame):
+    y = df['label2']
+    X = df.drop(columns=['label1', 'label2', 'label3'])
+    le = LabelEncoder()
+    y = le.fit_transform(y)
+    rf = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42,
+        n_jobs=-1
+    )
+    
+    rf.fit(X, y)
+    importances = pd.Series(rf.feature_importances_,index=X.columns).sort_values(ascending=False)
+    features = importances[importances > 0.001].index.to_list()
+    features += ['label1', 'label2', 'label3']
+    return df[features]
+
 def limpieza_correlacion(df: pd.DataFrame):
     corr_matrix = df.corr().abs()
     
@@ -420,12 +437,13 @@ if __name__ == "__main__":
         logging.info(f"Las columnas generadas son {final_features}")
     elif args.split == True:
         dfmerged = delete_cfm_columns(dfmerged)
-        dfmerged = limpieza_infinitos(dfmerged)
+        #dfmerged = limpieza_infinitos(dfmerged)
         y = dfmerged[['label1', 'label2', 'label3']]
         dfmerged = dfmerged.drop(columns=['label1', 'label2', 'label3'])
         dfmerged = limpieza_varianza(dfmerged)
         dfmerged = limpieza_correlacion(dfmerged)
         dfmerged = pd.concat([dfmerged, y], axis=1)
+        dfmerged = rf_feature(dfmerged)
     
     if args.feature_selection_columns == True or args.split == True:
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):
