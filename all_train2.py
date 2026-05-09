@@ -77,7 +77,7 @@ def process(input, folder, tarea):
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)
     #X_train, y_train = balanceo_cfm(X_train, y_train, tarea)
-    X_train_scaled, y_train = balanceo_cfm(X_train_scaled, y_train)
+    X_train_scaled, y_train = balanceo_cfm(X_train_scaled, y_train, tarea)
     
     
 
