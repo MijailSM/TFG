@@ -73,6 +73,19 @@ def delete_cfm_columns(df: pd.DataFrame):
     clases_validas = conteos[conteos > 1].index
     return df[df['label3'].isin(clases_validas)]
 
+def delete_ins_label3(df: pd.DataFrame):
+    target_column = 'label3'
+    min_samples = 50
+
+    # 1. Contamos cuántas muestras hay por cada clase
+    counts = df[target_column].value_counts()
+
+    # 2. Identificamos las clases que tienen 50 o más muestras
+    clases_a_mantener = counts[counts >= min_samples].index
+
+    # 3. Filtramos el DataFrame original
+    return df[df[target_column].isin(clases_a_mantener)]
+
 def limpieza_varianza(df: pd.DataFrame, threshold=0.01):
     selector = VarianceThreshold(threshold=threshold)
     selector.fit(df)
@@ -104,7 +117,6 @@ def limpieza_correlacion(df: pd.DataFrame):
     upper = corr_matrix.where(
         np.triu(np.ones(corr_matrix.shape), k=1).astype(bool)
     )
-    
     to_drop = [col for col in upper.columns if any(upper[col] > 0.95)]
     logging.info(f"Columnas eliminadas por correlacion: {to_drop}")
     return df.drop(columns=to_drop)
@@ -447,6 +459,7 @@ if __name__ == "__main__":
         dfmerged = limpieza_correlacion(dfmerged)
         dfmerged = pd.concat([dfmerged, y], axis=1)
         dfmerged = rf_feature(dfmerged)
+        dfmerged = delete_ins_label3(dfmerged)
     
     if args.feature_selection_columns == True or args.split == True:
         for i in tqdm.tqdm(range(0, 3), desc="Extrayendo csvs...", unit="archivo", bar_format=custom_bar):

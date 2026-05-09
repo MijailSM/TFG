@@ -35,9 +35,13 @@ def main():
     
     print("Realizando undersampling...")
 
-    enn_1s = EditedNearestNeighbours(sampling_strategy=[4], n_neighbors=3)
-    X_train, y_train = enn_1s.fit_resample(X_train, y_train)
-    
+    counts = y_train.value_counts()
+    sampling_strategy = {
+        label: min(count, 2500) for label, count in counts.items()
+    }
+    rus = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=42)
+    X_train, y_train = rus.fit_resample(X_train, y_train)
+
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)

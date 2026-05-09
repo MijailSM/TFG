@@ -39,7 +39,12 @@ def balanceo_cfm(X_train, y_train, tarea):
         rus = RandomUnderSampler()
         X_train_bal, y_train_bal = rus.fit_resample(X_train, y_train)
     else:
-        X_train_bal, y_train_bal = X_train, y_train
+        counts = y_train.value_counts()
+        sampling_strategy = {
+            label: min(count, 2500) for label, count in counts.items()
+        }
+        rus = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=42)
+        X_train_bal, y_train_bal = rus.fit_resample(X_train, y_train)
     print(f"Valores de cada clase: {y_train_bal.value_counts()}")
     return (X_train_bal, y_train_bal)
 
@@ -210,4 +215,4 @@ if __name__ == "__main__":
     
     tareas = {'2clases': 'label1', '8clases': 'label2', '60clases': 'label3'}
     for tarea in tareas.items():
-        process(f"csv/{tarea[1]}_{arguments.input}", f"{folder}/{tarea[0]}", tarea[0])
+        process(f"csv/{tarea[1]}_{arguments.input}", f"joblibs/{folder}/{tarea[0]}", tarea[0])
