@@ -31,7 +31,7 @@ def balanceo_cfm(X_train, y_train, tarea):
             6: 10000,
             7: 10000
         }
-        smote = SMOTENC(sampling_strategy=smt_strategy, random_state=42, k_neighbors=5, categorical_features=['Dst Port', 'Protocol', 'Fwd PSH Flags'])
+        smote = SMOTENC(sampling_strategy=smt_strategy, random_state=42, k_neighbors=5, categorical_features=[3, 35, 37])
         X_train_bal, y_train_bal = smote.fit_resample(X_train, y_train)
         rus = RandomUnderSampler(sampling_strategy=rus_strategy, random_state=42)
         X_train_bal, y_train_bal = rus.fit_resample(X_train_bal, y_train_bal)
