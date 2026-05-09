@@ -39,12 +39,17 @@ def balanceo_cfm(X_train, y_train, tarea):
         rus = RandomUnderSampler()
         X_train_bal, y_train_bal = rus.fit_resample(X_train, y_train)
     else:
+        target_samples = 250
         counts = y_train.value_counts()
-        sampling_strategy = {
-            label: min(count, 2500) for label, count in counts.items()
-        }
-        rus = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=42)
-        X_train_bal, y_train_bal = rus.fit_resample(X_train, y_train)
+        strategy_rus = {label: min(count, target_samples) for label, count in counts.items()}
+        rus = RandomUnderSampler(sampling_strategy=strategy_rus, random_state=42)
+        X_rus, y_rus = rus.fit_resample(X_train, y_train)
+        strategy_smote = {label: target_samples for label in y_rus.unique()}
+        smote_nc = SMOTENC(categorical_features=['Dst Port', 'Protocol', 'Fwd PSH Flags'], 
+                   sampling_strategy=strategy_smote, 
+                   random_state=42)
+        X_train_bal, y_train_bal = smote_nc.fit_resample(X_rus, y_rus)
+        
     print(f"Valores de cada clase: {y_train_bal.value_counts()}")
     return (X_train_bal, y_train_bal)
 
