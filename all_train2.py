@@ -73,11 +73,11 @@ def process(input, folder, tarea):
         enn_1s = EditedNearestNeighbours(sampling_strategy=[4], n_neighbors=3)
     X_train, y_train = enn_1s.fit_resample(X_train, y_train)
     """
-    #X_train, y_train = balanceo_cfm(X_train, y_train, tarea)
-    X_train, y_train = balanceo_cfm2(X_train, y_train)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)
+    #X_train, y_train = balanceo_cfm(X_train, y_train, tarea)
+    X_train_scaled, y_train = balanceo_cfm(X_train_scaled, y_train)
     
     
 
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Archivo csv para el entrenamiento y validacion")
     arguments = parser.parse_args()
-    folder = '09-05-2026-CFM-NobalanCleanedRFBalancedRUS'
+    folder = '09-05-2026-CFM-NobalanCleanedRFBalancedSCALED'
     generate_joblib_folder.create(folder)
     
     
