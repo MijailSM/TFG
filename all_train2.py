@@ -45,7 +45,7 @@ def balanceo_cfm(X_train, y_train, tarea):
         rus = RandomUnderSampler(sampling_strategy=strategy_rus, random_state=42)
         X_rus, y_rus = rus.fit_resample(X_train, y_train)
         strategy_smote = {label: target_samples for label in y_rus.unique()}
-        smote_nc = SMOTENC(categorical_features=['Dst Port', 'Protocol', 'Fwd PSH Flags'], 
+        smote_nc = SMOTENC(categorical_features=[3, 35, 37], 
                    sampling_strategy=strategy_smote, 
                    random_state=42)
         X_train_bal, y_train_bal = smote_nc.fit_resample(X_rus, y_rus)
@@ -218,6 +218,6 @@ if __name__ == "__main__":
     generate_joblib_folder.create(folder)
     
     
-    tareas = {'2clases': 'label1', '8clases': 'label2', '60clases': 'label3'}
+    tareas = {'8clases': 'label2', '60clases': 'label3'}
     for tarea in tareas.items():
         process(f"csv/{tarea[1]}_{arguments.input}", f"joblibs/{folder}/{tarea[0]}", tarea[0])
