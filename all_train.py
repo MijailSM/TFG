@@ -34,12 +34,7 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     
     print("Realizando undersampling...")
-
-    counts = y_train.value_counts()
-    sampling_strategy = {
-        label: min(count, 2500) for label, count in counts.items()
-    }
-    rus = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=42)
+    rus = RandomUnderSampler(random_state=42)
     X_train, y_train = rus.fit_resample(X_train, y_train)
 
     scaler = StandardScaler()
