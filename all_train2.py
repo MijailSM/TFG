@@ -57,6 +57,14 @@ def balanceo_cfm2(X_train, y_train):
     rus = RandomUnderSampler()
     return rus.fit_resample(X_train, y_train)
 
+def balanceo_processed(X_train, y_train):
+    rus = RandomUnderSampler()
+    X_train_bal, y_train_bal = rus.fit_resample(X_train, y_train)
+
+    
+    print(f"Valores de cada clase: {y_train_bal.value_counts()}")
+    
+    return (X_train_bal, y_train_bal)
 
 def process(input, folder, tarea):
     
@@ -82,7 +90,8 @@ def process(input, folder, tarea):
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.fit_transform(X_test)
     #X_train, y_train = balanceo_cfm(X_train, y_train, tarea)
-    X_train_scaled, y_train = balanceo_cfm(X_train_scaled, y_train, tarea)
+    #X_train_scaled, y_train = balanceo_cfm(X_train_scaled, y_train, tarea)
+    X_train_scaled, y_train = balanceo_processed(X_train_scaled, y_train)
     
     
 
@@ -214,7 +223,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Archivo csv para el entrenamiento y validacion")
     arguments = parser.parse_args()
-    folder = '09-05-2026-CFM-NobalanCleanedRFBalancedSCALED'
+    folder = '10-05-2026-CICDEF-RUS-1sec'
     generate_joblib_folder.create(folder)
     
     
