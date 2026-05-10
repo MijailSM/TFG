@@ -62,6 +62,8 @@ def balanceo_cfm2(X_train, y_train):
 def balanceo_processed(X_train, y_train):
     counts = Counter(y_train)
     if tarea != '60clases':
+        if tarea == '2clases':
+            return RandomUnderSampler().fit_resample(X_train, y_train)
         clase_objetivo = 0
     else:
         clase_objetivo = 4
