@@ -68,9 +68,6 @@ def balanceo_processed(X_train, y_train):
     # 2. Identificar las "demás" clases (excluyendo la objetivo)
     otras_clases = [val for key, val in counts.items() if key != clase_objetivo]
     
-    if not otras_clases:
-        raise ValueError("No hay suficientes clases para calcular una media.")
-    
     # 3. Calcular la media de la cantidad de muestras de las demás clases
     media_muestras = int(np.mean(otras_clases))
     
