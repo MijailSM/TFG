@@ -89,7 +89,7 @@ def balanceo_processed(X_train, y_train):
         X_res, y_res = rus.fit_resample(X_train, y_train)
         
         print(f"Clase '{clase_objetivo}' reducida de {counts[clase_objetivo]} a {media_muestras} (media de las demás).")
-        return X_res, y_res
+        return (X_res, y_res)
 
 def process(input, folder, tarea):
     
