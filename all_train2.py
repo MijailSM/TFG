@@ -16,6 +16,8 @@ import optuna
 import generate_joblib_folder
 from imblearn.under_sampling import RandomUnderSampler, EditedNearestNeighbours
 from imblearn.pipeline import Pipeline
+from collections import Counter
+import numpy as np
 
 def balanceo_cfm(X_train, y_train, tarea):
     if tarea == '8clases':
@@ -58,13 +60,36 @@ def balanceo_cfm2(X_train, y_train):
     return rus.fit_resample(X_train, y_train)
 
 def balanceo_processed(X_train, y_train):
-    rus = RandomUnderSampler()
-    X_train_bal, y_train_bal = rus.fit_resample(X_train, y_train)
-
+    counts = Counter(y_train)
+    if tarea != '60clases':
+        clase_objetivo = 0
+    else:
+        clase_objetivo = 4
+    # 2. Identificar las "demás" clases (excluyendo la objetivo)
+    otras_clases = [val for key, val in counts.items() if key != clase_objetivo]
     
-    print(f"Valores de cada clase: {y_train_bal.value_counts()}")
+    if not otras_clases:
+        raise ValueError("No hay suficientes clases para calcular una media.")
     
-    return (X_train_bal, y_train_bal)
+    # 3. Calcular la media de la cantidad de muestras de las demás clases
+    media_muestras = int(np.mean(otras_clases))
+    
+    # 4. Definir la estrategia de muestreo (sampling_strategy)
+    # Solo aplicamos el recorte a la clase objetivo si tiene más muestras que la media
+    if counts[clase_objetivo] > media_muestras:
+        estrategia = {clase_objetivo: media_muestras}
+        
+        # Mantener las demás clases con su cantidad original
+        for clase in counts:
+            if clase != clase_objetivo:
+                estrategia[clase] = counts[clase]
+        
+        # 5. Configurar y aplicar RandomUnderSampler [cite: 529, 530]
+        rus = RandomUnderSampler(sampling_strategy=estrategia, random_state=42)
+        X_res, y_res = rus.fit_resample(X_train, y_train)
+        
+        print(f"Clase '{clase_objetivo}' reducida de {counts[clase_objetivo]} a {media_muestras} (media de las demás).")
+        return X_res, y_res
 
 def process(input, folder, tarea):
     
