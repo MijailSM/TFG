@@ -59,11 +59,9 @@ def balanceo_cfm2(X_train, y_train):
     rus = RandomUnderSampler()
     return rus.fit_resample(X_train, y_train)
 
-def balanceo_processed(X_train, y_train):
+def balanceo_processed(X_train, y_train, tarea):
     counts = Counter(y_train)
     if tarea != '60clases':
-        if tarea == '2clases':
-            return RandomUnderSampler().fit_resample(X_train, y_train)
         clase_objetivo = 0
     else:
         clase_objetivo = 4
@@ -115,7 +113,7 @@ def process(input, folder, tarea):
     X_test_scaled = scaler.fit_transform(X_test)
     #X_train, y_train = balanceo_cfm(X_train, y_train, tarea)
     #X_train_scaled, y_train = balanceo_cfm(X_train_scaled, y_train, tarea)
-    X_train_scaled, y_train = balanceo_processed(X_train_scaled, y_train)
+    X_train_scaled, y_train = balanceo_processed(X_train_scaled, y_train, tarea)
     
     
 
