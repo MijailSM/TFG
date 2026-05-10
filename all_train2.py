@@ -73,20 +73,19 @@ def balanceo_processed(X_train, y_train, tarea):
     
     # 4. Definir la estrategia de muestreo (sampling_strategy)
     # Solo aplicamos el recorte a la clase objetivo si tiene más muestras que la media
-    if counts[clase_objetivo] > media_muestras:
-        estrategia = {clase_objetivo: media_muestras}
-        
-        # Mantener las demás clases con su cantidad original
-        for clase in counts:
-            if clase != clase_objetivo:
-                estrategia[clase] = counts[clase]
-        
-        # 5. Configurar y aplicar RandomUnderSampler [cite: 529, 530]
-        rus = RandomUnderSampler(sampling_strategy=estrategia, random_state=42)
-        X_res, y_res = rus.fit_resample(X_train, y_train)
-        
-        print(f"Clase '{clase_objetivo}' reducida de {counts[clase_objetivo]} a {media_muestras} (media de las demás).")
-        return (X_res, y_res)
+    estrategia = {clase_objetivo: media_muestras}
+    
+    # Mantener las demás clases con su cantidad original
+    for clase in counts:
+        if clase != clase_objetivo:
+            estrategia[clase] = counts[clase]
+    
+    # 5. Configurar y aplicar RandomUnderSampler [cite: 529, 530]
+    rus = RandomUnderSampler(sampling_strategy=estrategia, random_state=42)
+    X_res, y_res = rus.fit_resample(X_train, y_train)
+    
+    print(f"Clase '{clase_objetivo}' reducida de {counts[clase_objetivo]} a {media_muestras} (media de las demás).")
+    return (X_res, y_res)
 
 def process(input, folder, tarea):
     
