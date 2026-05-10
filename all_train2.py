@@ -227,6 +227,6 @@ if __name__ == "__main__":
     generate_joblib_folder.create(folder)
     
     
-    tareas = {'8clases': 'label2', '60clases': 'label3'}
+    tareas = {'2clases': 'label1', '8clases': 'label2', '60clases': 'label3'}
     for tarea in tareas.items():
         process(f"csv/{tarea[1]}_{arguments.input}", f"joblibs/{folder}/{tarea[0]}", tarea[0])
